@@ -1,0 +1,22 @@
+name: cross_domain_eval
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  # PyTorch with CUDA 11.8 (adjust cuda version to match your driver)
+  - pytorch=2.0.1
+  - pytorch-cuda=11.8
+  - torchvision
+  - pip:
+    - lpips>=0.1.4
+    - opencv-contrib-python>=4.8.0
+    - scipy>=1.9.0
+    - Pillow>=9.0
+    - numpy>=1.21
+    - tqdm>=4.64
+    # NOTE: diff_gaussian_rasterization must be compiled manually.
+    # See README.md → "Installing the 3DGS renderer".

@@ -1,0 +1,34 @@
+{
+  "_comment": "Copy this file, set base_dir and python_bin for your machine, fill in relative paths, then run: python run_pipeline.py --config configs/my_scene.json",
+
+  "scene_name": "my_scene",
+
+  "base_dir":  "/path/to/your/project/root",
+
+  "gopro_colmap":  "data/go_pro/my_scene/sparse/0",
+  "gopro_images":  "data/go_pro/my_scene/images",
+
+  "cameras_raw":   "results/my_scene/cameras_raw.json",
+
+  "mpu": 1.0,
+
+  "control_ply":   "splats/gopro_control.ply",
+
+  "methods": {
+    "3DGS":        "splats/mastcam_3dgs.ply",
+    "MipSplatting": "splats/mastcam_mip.ply"
+  },
+
+  "code_dir":   "path/to/gaussian_splatting",
+  "python_bin": "python",
+
+  "render_width":  960,
+  "render_height": 540,
+
+  "y_offsets": [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3],
+  "depth":     0.35,
+
+  "test_hold": 8,
+
+  "out_dir": "results/my_scene/eval"
+}
