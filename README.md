@@ -279,13 +279,13 @@ out_dir/
 
 ## Authors & Credits
 
-**Concept, Reconstruction & Quantification**
+**Concept, Reconstruction & Quantification:**
 Antar Mazumder — PhD Student, Robotics, Dept. of ME, Colorado School of Mines · [antar_mazumder@mines.edu](mailto:antar_mazumder@mines.edu)
 
-**Supervision**
+**Supervision:**
 Dr. Frances (Frankie) Zhu — Asst. Prof., Dept. of ME, Colorado School of Mines · [frankie.zhu@mines.edu](mailto:frankie.zhu@mines.edu)
 
-**Perception Dataset**
+**Perception Dataset:**
 Ryan Hartzell — PhD Student, Robotics, Dept. of ME, Colorado School of Mines · [ryan_hartzell@mines.edu](mailto:ryan_hartzell@mines.edu)
 
 **Team**
