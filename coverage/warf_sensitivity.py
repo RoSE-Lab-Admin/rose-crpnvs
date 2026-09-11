@@ -4,7 +4,7 @@ warf_sensitivity.py — Sensitivity analysis of the WARF threshold angle.
 
 Sweeps theta* from 5° to 60° across pairs of COLMAP datasets and plots
 per-dataset WARF curves alongside the two group band envelopes.  Clean
-separation (GoPro min > MastCam max) is highlighted.
+separation (GoPro min > Rover max) is highlighted.
 
 Usage:
   python warf_sensitivity.py --data-root /path/to/data --out-dir ./results
@@ -32,7 +32,7 @@ THRESHOLDS_DEG = np.arange(5, 65, 5)   # 5, 10, ..., 60
 SAMPLE         = 20000
 SEED           = 42
 C_GOPRO        = "#1A6EB5"
-C_MASTCAM      = "#C0392B"
+C_ROVER        = "#C0392B"
 THETA_REF      = 30.0
 
 
@@ -181,9 +181,9 @@ def main():
         {"label": "GoPro S1",   "group": "GoPro",   "path": data_root / "go_pro/scene_1/sparse/0"},
         {"label": "GoPro S2",   "group": "GoPro",   "path": data_root / "go_pro/scene_2/sparse/0"},
         {"label": "GoPro S3",   "group": "GoPro",   "path": data_root / "go_pro/scene_3/sparse/0"},
-        {"label": "MastCam S1", "group": "MastCam", "path": data_root / "mastcam/scene_1/scene1_full/sparse/0"},
-        {"label": "MastCam S2", "group": "MastCam", "path": data_root / "mastcam/scan_2/sparse/0"},
-        {"label": "MastCam S3", "group": "MastCam", "path": data_root / "mastcam/scan3/scan3_full/sparse/0"},
+        {"label": "Rover S1",   "group": "Rover",   "path": data_root / "mastcam/scene_1/scene1_full/sparse/0"},
+        {"label": "Rover S2",   "group": "Rover",   "path": data_root / "mastcam/scan_2/sparse/0"},
+        {"label": "Rover S3",   "group": "Rover",   "path": data_root / "mastcam/scan3/scan3_full/sparse/0"},
     ]
 
     print("Loading datasets and precomputing triangulation angles …")
@@ -200,7 +200,7 @@ def main():
 
     # ── separation gap at each threshold ──────────────────────────────────────
     gp_warfs = np.array([r["warfs"] for r in results if r["group"] == "GoPro"])
-    mc_warfs = np.array([r["warfs"] for r in results if r["group"] == "MastCam"])
+    mc_warfs = np.array([r["warfs"] for r in results if r["group"] == "Rover"])
     gp_min, gp_max = gp_warfs.min(0), gp_warfs.max(0)
     mc_min, mc_max = mc_warfs.min(0), mc_warfs.max(0)
     gap   = gp_min - mc_max
@@ -223,12 +223,12 @@ def main():
     ax.fill_between(THRESHOLDS_DEG, gp_min, gp_max,
                     color=C_GOPRO, alpha=0.18, label="GoPro range")
     ax.fill_between(THRESHOLDS_DEG, mc_min, mc_max,
-                    color=C_MASTCAM, alpha=0.18, label="MastCam range")
+                    color=C_ROVER, alpha=0.18, label="Rover range")
 
     ls_cycle = ["-", "--", ":"]
     gi = mi = 0
     for r in results:
-        color = C_GOPRO if r["group"] == "GoPro" else C_MASTCAM
+        color = C_GOPRO if r["group"] == "GoPro" else C_ROVER
         ls    = ls_cycle[gi] if r["group"] == "GoPro" else ls_cycle[mi]
         ax.plot(THRESHOLDS_DEG, r["warfs"], color=color, lw=1.6,
                 ls=ls, label=r["label"], zorder=4)
@@ -250,13 +250,13 @@ def main():
     color_ratio  = "#FF7F0E"
     ax2.bar(THRESHOLDS_DEG, np.clip(gap, 0, None),
             width=3.5, color=color_gap, alpha=0.7,
-            label="Gap (GoPro min − MastCam max)")
+            label="Gap (GoPro min − Rover max)")
     ax2.axhline(0, color="0.5", lw=0.8)
     ax2.axvline(THETA_REF, color="0.3", lw=1.2, ls="--")
 
     ax2b = ax2.twinx()
     ax2b.plot(THRESHOLDS_DEG, ratio, "o-", color=color_ratio, lw=1.6,
-              ms=5, label="Ratio (GoPro min / MastCam max)")
+              ms=5, label="Ratio (GoPro min / Rover max)")
     ax2b.set_ylabel("GoPro-min / MastCam-max  (×)", fontsize=10, color=color_ratio)
     ax2b.tick_params(axis="y", colors=color_ratio, labelsize=9)
 

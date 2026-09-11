@@ -24,8 +24,9 @@ from pathlib import Path
 import numpy as np
 
 # ── reference values: best observed across GoPro Scene1/Scene2/Scene3 ─────────
+# Diagonal computed with p5–p95 percentile clipping (default).
 WARF_REF           = 0.143   # GoPro Scene1 (14.3%)
-WAPD_REF           = 13.70   # GoPro Scene2
+WAPD_REF           = 16.51   # GoPro Scene2 (p5–p95 diagonal)
 WARF_THRESHOLD_DEG = 30.0
 
 
@@ -147,9 +148,16 @@ def _cam_center(img: dict) -> np.ndarray:
 
 # ── metrics ────────────────────────────────────────────────────────────────────
 
-def cam_diagonal(images: dict) -> float:
+def cam_diagonal(images: dict, lo: float = 5.0, hi: float = 95.0) -> float:
+    """Bounding-box diagonal of camera centres using percentile clipping.
+
+    lo/hi = 5/95 by default to suppress outlier poses; pass 0/100 for strict
+    min/max (original behaviour).
+    """
     centers = np.array([_cam_center(img) for img in images.values()])
-    return float(np.linalg.norm(centers.max(0) - centers.min(0)))
+    lo_pt = np.percentile(centers, lo, axis=0)
+    hi_pt = np.percentile(centers, hi, axis=0)
+    return float(np.linalg.norm(hi_pt - lo_pt))
 
 
 def compute_warf(images: dict, points3d: dict,
@@ -212,6 +220,10 @@ def main():
                         help="sparse/0 dir, dataset root, or database.db")
     parser.add_argument("--sample", type=int, default=20000,
                         help="Max 3D points to sample for WARF (default: 20000)")
+    parser.add_argument("--diag-percentile", type=float, nargs=2,
+                        default=[5.0, 95.0], metavar=("LO", "HI"),
+                        help="Percentile range for camera diagonal (default: 5 95). "
+                             "Use 0 100 for strict min/max.")
     args = parser.parse_args()
 
     try:
@@ -224,8 +236,9 @@ def main():
     images, points3d = load_reconstruction(sparse_dir)
     print(f"  {len(images):,} registered images   {len(points3d):,} 3D points")
 
+    lo, hi = args.diag_percentile
     print(f"\nComputing coverage metrics (WARF sample = {args.sample:,}) …")
-    diag             = cam_diagonal(images)
+    diag             = cam_diagonal(images, lo=lo, hi=hi)
     warf, n_wide_est = compute_warf(images, points3d, sample=args.sample)
     wapd             = compute_wapd(n_wide_est, diag)
     cs               = coverage_score(warf, wapd)
@@ -235,7 +248,8 @@ def main():
     print(f"  Coverage Score")
     print(f"{'═'*W}")
     print(f"  Path          : {sparse_dir}")
-    print(f"  Camera cluster: {diag:.2f} units diagonal   {len(images)} images")
+    print(f"  Camera cluster: {diag:.2f} units diagonal   "
+          f"{len(images)} images  (p{lo:.0f}–p{hi:.0f})")
     print(f"{'─'*W}")
     print(f"  WARF (>{WARF_THRESHOLD_DEG:.0f}°)   : {warf*100:.1f}%"
           f"   (ref {WARF_REF*100:.1f}% → {min(warf/WARF_REF,1)*100:.0f}% of ref)")

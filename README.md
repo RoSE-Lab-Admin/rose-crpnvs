@@ -1,6 +1,4 @@
-# rose-crpnvs — Cross-Reconstruction Photorealistic Novel View Synthesis
-
-A pipeline to quantify cross-reconstruction photorealistic novel view synthesis in reconstructed Lunar analog digital twins.
+# CRPNVS — Cross-Reconstruction Photorealistic Novel View Synthesis
 
 Evaluate 3D Gaussian Splatting models trained on one camera system (MastCam)
 against a reference from a different camera system (GoPro), across two stages:
@@ -26,7 +24,7 @@ height differences between the two camera rigs, and a fixed depth pull-back
 ## Directory layout
 
 ```
-rose-crpnvs/
+crpnvs/
 ├── README.md
 ├── environment.yml              # conda env (Python + lpips + opencv + scipy)
 ├── coverage/                    # ── PRE-PROCESSING ────────────────────────
@@ -82,7 +80,16 @@ python coverage/compute_cs.py data/mastcam/scan_2
 
 # Reduce sample size for faster runs
 python coverage/compute_cs.py data/go_pro/scene_3/sparse/0 --sample 10000
+
+# Change the percentile range used to clip the camera-cluster diagonal
+# (default: 5 95; use 0 100 for strict min/max, i.e. no outlier clipping)
+python coverage/compute_cs.py data/go_pro/scene_1/sparse/0 --diag-percentile 0 100
 ```
+
+`--diag-percentile LO HI` controls the percentile range used by `cam_diagonal()`
+to clip outlier camera poses before measuring the bounding-box diagonal (default
+`5 95`, not the interquartile range). Changing it shifts WAPD and therefore CS,
+so keep it fixed when comparing scores across datasets.
 
 CS scores across canonical datasets:
 
