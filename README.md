@@ -1,5 +1,7 @@
 # CRPNVS — Cross-Reconstruction Photorealistic Novel View Synthesis
 
+Code for *A Reproducible Reconstruction and Evaluation Framework for Photorealistic Lunar Analog Scene Reconstruction Toward Digital Twins* — [arXiv:2611.00870](https://arxiv.org/abs/2611.00870) · [project page](https://rose-lab-admin.github.io/rose-lunar-dt-rec/)
+
 Evaluate 3D Gaussian Splatting models trained on one camera system (MastCam)
 against a reference from a different camera system (GoPro), across two stages:
 
@@ -65,11 +67,18 @@ coverage to support reliable novel-view synthesis evaluation.
 ### Coverage Score (`coverage/compute_cs.py`)
 
 Computes WARF and WAPD from the COLMAP sparse reconstruction and combines them
-into a Coverage Score CS ∈ [0, 1].
+into a Coverage Score CS ∈ [0, 1]. In the paper these are written W<sub>f</sub>,
+W<sub>d</sub> and S<sub>c</sub>:
+
+| Code | Paper | Name |
+|---|---|---|
+| WARF | W<sub>f</sub> | Wide-Angle Reconstruction Fraction: fraction of COLMAP points whose two farthest observing cameras subtend more than θ* = 30° |
+| WAPD | W<sub>d</sub> | Wide-Angle Point Density: number of such points divided by d³, where d is the 5th–95th percentile diagonal of the camera centres |
+| CS | S<sub>c</sub> | Coverage Score: √((W<sub>f</sub> / W<sub>f,ref</sub>) · (W<sub>d</sub> / W<sub>d,ref</sub>)) |
 
 **Reference values** (best observed across GoPro handheld captures):
 - WARF_ref = 14.3%  (GoPro Scene 1)
-- WAPD_ref = 13.70  (GoPro Scene 2)
+- WAPD_ref = 16.51  (GoPro Scene 2)
 
 ```bash
 # Single dataset
@@ -91,18 +100,18 @@ to clip outlier camera poses before measuring the bounding-box diagonal (default
 `5 95`, not the interquartile range). Changing it shifts WAPD and therefore CS,
 so keep it fixed when comparing scores across datasets.
 
-CS scores across canonical datasets:
+CS scores across canonical datasets (as reported in the paper, Tables I and III):
 
-| Dataset | WARF (>30°) | WAPD | CS |
+| Dataset | WARF / W<sub>f</sub> (>30°) | WAPD / W<sub>d</sub> | CS / S<sub>c</sub> |
 |---|---|---|---|
-| GoPro Scene 1   | 14.3% | 12.98 | **0.973** |
-| GoPro Scene 2   | 11.7% | 13.70 | **0.905** |
-| GoPro Scene 3   | 6.3%  | 7.25  | **0.483** |
-| MastCam Scene 1 | 3.5%  | 0.21  | **0.061** |
-| MastCam Scan 2  | 1.7%  | 0.13  | **0.033** |
-| MastCam Scan 3  | 4.7%  | 0.36  | **0.094** |
+| GoPro Scene 1   | 14.3% | 15.60 | **0.97** |
+| GoPro Scene 2   | 11.7% | 16.51 | **0.91** |
+| GoPro Scene 3   | 6.3%  | 11.56 | **0.56** |
+| MastCam Scene 1 | 3.5%  | 0.57  | **0.092** |
+| MastCam Scene 2 | 1.7%  | 0.18  | **0.036** |
+| MastCam Scene 3 | 4.7%  | 0.83  | **0.129** |
 
-GoPro min CS (0.483) is 5× higher than MastCam max CS (0.094) — clean separation.
+GoPro min CS (0.56) is about 4× higher than MastCam max CS (0.129) — clean separation.
 
 ### Threshold sensitivity (`coverage/warf_sensitivity.py`)
 
@@ -147,16 +156,16 @@ The script reports:
 - **Scale spread** — standard deviation of all measured side lengths (triangulation quality)
 - **Squareness error** — intra-marker side consistency (per-marker triangulation noise)
 
-Verified results:
+Verified results (error and spread as in the paper, Table IV):
 
 | Dataset | Tag type | Markers | mpu | Scale error | Spread |
 |---|---|---|---|---|---|
 | GoPro scene_1   | ArUco 4×4      | 5 | 0.902 | +0.58% | ±2.85%  |
-| Mastcam scene_1 | ArUco 4×4      | 3 | 0.361 | −7.68% | ±21.5%  |
-| GoPro scene_2   | ArUco 4×4      | 5 | 1.074 | −3.22% | ±16.6%  |
-| Mastcam scene_2 | ArUco 4×4      | 3 | 0.559 | +7.57% | ±22.2%  |
+| Mastcam scene_1 | ArUco 4×4      | 3 | 0.361 | +0.42% | ±23.33% |
+| GoPro scene_2   | ArUco 4×4      | 5 | 1.074 | −3.22% | ±16.61% |
+| Mastcam scene_2 | ArUco 4×4      | 3 | 0.559 | +7.57% | ±22.15% |
 | GoPro scene_3   | AprilTag 36h11 | 3 | 1.317 | −0.04% | ±2.75%  |
-| Mastcam scene_3 | AprilTag 36h11 | 1 | 0.593 | −0.18% | ±14.4%  |
+| Mastcam scene_3 | AprilTag 36h11 | 1 | 0.593 | −0.18% | ±14.38% |
 
 ### 3. Install the 3DGS renderer
 
